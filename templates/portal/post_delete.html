@@ -1,0 +1,13 @@
+{% extends 'default.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Удаление {% if object.post_type == 'news' %}новости{% else %}статьи{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <p>Вы уверены, что хотите удалить "{{ object.title }}"?</p>
+        <button type="submit" class="btn btn-danger">Удалить</button>
+        <a href="{{ view.get_success_url }}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

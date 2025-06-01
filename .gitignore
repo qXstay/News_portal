@@ -1,0 +1,60 @@
+# Django #
+##########
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+
+# Environment #
+###############
+.env
+.venv/
+venv/
+
+# IDE #
+#######
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Cache #
+#########
+cache_files/
+
+# Celery #
+##########
+celerybeat-schedule.*
+
+# OS #
+######
+.DS_Store
+Thumbs.db
+
+# Python #
+##########
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+.pytest_cache/
+
+# Static files #
+################
+staticfiles/
+
+# Logs #
+########
+logs/*.log
+!logs/.keep  # Сохраняет пустую папку
+
+# Other #
+#########
+*.bak
+*.tmp
+*.swp
+*.swo
+*.db
+*.sqlite3

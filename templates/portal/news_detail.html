@@ -1,0 +1,20 @@
+{% extends 'default.html' %}
+{% load censor %}
+
+{% block title %}{{ post.title|censor }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ post.title|censor }}</h2>
+    <p><strong>Автор:</strong> {{ post.author.user.username }}</p>
+    <p><strong>Дата публикации:</strong> {{ post.created_at|date:"d.m.Y" }}</p>
+    <p><strong>Категории:</strong>
+        {% for category in post.categories.all %}
+            {{ category.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    <hr>
+    <p>{{ post.content|censor }}</p>
+    <a href="{% url 'news_list' %}" class="btn btn-secondary">Назад к списку новостей</a>
+</div>
+{% endblock %}

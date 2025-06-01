@@ -1,0 +1,85 @@
+{% extends 'default.html' %}
+{% load censor %}
+
+{% block title %}Новости{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mt-5">Все новости (Всего: {{ page_obj.paginator.count }})</h2>
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th scope="col">Заголовок</th>
+                <th scope="col">Дата</th>
+                <th scope="col">Превью</th>
+                <th scope="col">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in page_obj %}
+                <tr>
+                    <td>
+                        <a href="{% url 'news_detail' post.id %}">
+                            {{ post.title|slice:":20"|censor }}
+                        </a>
+                    </td>
+                    <td>{{ post.created_at|date:"d.m.Y" }}</td>
+                    <td>{{ post.content|slice:":50"|censor }}</td>
+                    <td>
+                        {% if user == post.author.user %}
+                            <a href="{% url 'news_edit' post.pk %}" class="btn btn-sm btn-warning">Редактировать</a>
+                            <a href="{% url 'news_delete' post.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                        {% else %}
+                            <span class="text-muted">Нет прав</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if post.postcategory_set.all %}
+                <tr>
+                    <td colspan="4">
+                        {% for post_category in post.postcategory_set.all %}
+                            {% with category=post_category.category %}
+                                <div class="d-inline-block me-2 mb-2">
+                                    <span class="badge bg-secondary">{{ category.name }}</span>
+                                    {% if user.is_authenticated %}
+                                        {% if user in category.subscribers.all %}
+                                            <a href="{% url 'unsubscribe' category.id %}" class="btn btn-sm btn-outline-danger">Отписаться</a>
+                                        {% else %}
+                                            <a href="{% url 'subscribe' category.id %}" class="btn btn-sm btn-outline-success">Подписаться</a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            {% endwith %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Новостей пока нет.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Пагинация -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; первая</a>
+                <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+            {% endif %}
+
+            <span class="current">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">следующая</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}

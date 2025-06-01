@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Новые публикации за неделю в «{{ category.name }}»</title>
+</head>
+<body>
+    <p>Здравствуйте, {{ user.username }}!</p>
+    <p>Новые публикации в «{{ category.name }}» за последние 7 дней:</p>
+
+    <ul>
+    {% for post in posts %}
+        <li>
+            <a href="http://{{ site_domain }}{{ post.get_absolute_url }}">
+                {{ post.title }}
+            </a>
+        </li>
+    {% empty %}
+        <li>Новых публикаций нет.</li>
+    {% endfor %}
+    </ul>
+
+    <p>С уважением,<br>Команда News Portal</p>
+</body>
+</html>

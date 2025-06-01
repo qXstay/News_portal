@@ -1,0 +1,56 @@
+{% extends 'default.html' %}
+{% load censor %}
+
+{% block title %}Статьи{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mt-5">Все статьи (Всего: {{ page_obj.paginator.count }})</h2>
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th scope="col">Заголовок</th>
+                <th scope="col">Дата</th>
+                <th scope="col">Превью</th>
+                <th scope="col">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in page_obj %}
+                <tr>
+                    <td>
+                        <a href="{% url 'news_detail' post.id %}">{{ post.title|slice:":20"|censor }}</a>
+                    </td>
+                    <td>{{ post.created_at|date:"d.m.Y" }}</td>
+                    <td>{{ post.content|slice:":50"|censor }}</td>
+                    <td>
+                        {% if user.is_authenticated and post.author.user == user %}
+                        <a href="{% url 'article_edit' post.pk %}" class="btn btn-sm btn-warning">Редактировать</a>
+                        <a href="{% url 'article_delete' post.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Пагинация -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; первая</a>
+                <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+            {% endif %}
+
+            <span class="current">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">следующая</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}

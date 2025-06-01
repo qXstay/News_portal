@@ -1,0 +1,43 @@
+{% extends "default.html" %}
+{% load socialaccount %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Регистрация</h2>
+
+    <!-- Кнопка Google -->
+    <div class="mb-4">
+        <a href="{% provider_login_url 'google' %}" class="btn btn-danger">
+            <i class="fab fa-google me-2"></i>Зарегистрироваться через Google
+        </a>
+        <a href="{% provider_login_url 'yandex' %}" class="btn btn-warning">
+            <i class="fab fa-yandex me-2"></i>Зарегистрироваться через Яндекс
+        </a>
+    </div>
+
+    <!-- Форма регистрации -->
+    <form method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_password1" class="form-label">Пароль</label>
+            <input type="password" name="password1" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_password2" class="form-label">Подтвердите пароль</label>
+            <input type="password" name="password2" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    </form>
+    {% if form.errors %}
+      <div class="alert alert-danger">
+    {{ form.errors }}
+      </div>
+{% endif %}
+</div>
+{% endblock %}

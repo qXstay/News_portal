@@ -1,0 +1,53 @@
+{% extends 'default.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>
+    {% if form.instance.pk %}Редактирование{% else %}Создание{% endif %}
+    {% if post_type == 'news' %}новости{% else %}статьи{% endif %}
+</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <!-- Заголовок -->
+        <div class="mb-3">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+            {{ form.title.errors }}
+        </div>
+
+        <!-- Контент -->
+        <div class="mb-3">
+            {{ form.content.label_tag }}
+            {{ form.content }}
+            {{ form.content.errors }}
+        </div>
+
+        <!-- Категории -->
+        <div class="mb-3">
+    <label class="form-label">Категории <span class="text-danger">*</span></label>
+    <div class="form-check">
+        {% for checkbox in form.categories %}
+            <div class="form-check mb-2">
+                <input
+                    type="checkbox"
+                    name="{{ form.categories.name }}"
+                    value="{{ checkbox.data.value }}"
+                    id="{{ checkbox.id_for_label }}"
+                    class="form-check-input"
+                    {% if checkbox.data.selected %}checked{% endif %}
+                >
+                <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                    {{ checkbox.choice_label }}
+                </label>
+            </div>
+        {% endfor %}
+        {{ form.categories.errors }}
+    </div>
+</div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+</div>
+{% endblock %}

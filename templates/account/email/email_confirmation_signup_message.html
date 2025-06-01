@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение регистрации</title>
+</head>
+<body>
+    {% load account %}
+    <h2>Добро пожаловать, {{ user.username }}!</h2>
+    <p>Благодарим вас за регистрацию в нашем сервисе!</p>
+    <p>Для завершения регистрации, пожалуйста, подтвердите ваш email:</p>
+    <p>
+        <a href="{{ activate_url }}" style="
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 5px;
+        ">
+            Подтвердить email
+        </a>
+    </p>
+    <p>Если кнопка не работает, скопируйте ссылку:</p>
+    <p>{{ activate_url }}</p>
+    <p>С уважением,<br>Команда проекта</p>
+</body>
+</html>

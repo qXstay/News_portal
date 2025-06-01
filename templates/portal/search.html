@@ -1,0 +1,63 @@
+{% extends 'default.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Поиск новостей</h2>
+
+    <!-- Форма фильтров -->
+    <form method="get" class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label for="id_title">Название:</label>
+            <input type="text"
+                   name="title"
+                   value="{{ filter.form.title.value|default:'' }}"
+                   class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label for="id_author">Автор:</label>
+            <input type="text"
+                   name="author"
+                   value="{{ filter.form.author.value|default:'' }}"
+                   class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label for="id_date">Дата (позже чем):</label>
+            <input type="date"
+                   name="date"
+                   value="{{ filter.form.date.value|default:'' }}"
+                   class="form-control">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Искать</button>
+    <a href="{% url 'news_search' %}" class="btn btn-secondary mt-3">Сбросить</a>
+</form>
+
+    <!-- Таблица результатов -->
+    {% if news %}
+        <h4>Результаты ({{ news|length }})</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Заголовок</th>
+                    <th>Автор</th>
+                    <th>Дата</th>
+                    <th>Превью</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in news %}
+                    <tr>
+                        <td><a href="/news/{{ post.id }}/">{{ post.title }}</a></td>
+                        <td>{{ post.author.user.username }}</td>
+                        <td>{{ post.created_at|date:"d.m.Y" }}</td>
+                        <td>{{ post.content|truncatewords:20 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">Новостей не найдено.</div>
+    {% endif %}
+</div>
+{% endblock %}

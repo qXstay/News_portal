@@ -1,0 +1,57 @@
+{% extends 'default.html' %}
+{% load socialaccount %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Регистрация</h2>
+
+    <!-- Кнопка регистрации через Google -->
+    <div class="mb-4">
+        <a href="{% provider_login_url 'google' %}" class="btn btn-danger">
+            <i class="fab fa-google"></i> Зарегистрироваться через Google
+        </a>
+        <a href="{% provider_login_url 'yandex' %}" class="btn btn-warning">
+            <i class="fab fa-yandex me-2"></i>Войти через Яндекс
+        </a>
+    </div>
+    ...
+</div>
+{% endblock %}
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Вход в систему</h2>
+
+
+    <!-- Вывод ошибок -->
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            Неправильный логин или пароль. Попробуйте снова.
+        </div>
+    {% endif %}
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Логин:</label>
+            <input type="text"
+                   name="username"
+                   class="form-control"
+                   id="id_username"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_password" class="form-label">Пароль:</label>
+            <input type="password"
+                   name="password"
+                   class="form-control"
+                   id="id_password"
+                   required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+</div>
+{% endblock %}

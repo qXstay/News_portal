@@ -1,0 +1,9 @@
+{% extends 'default.html' %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h1 class="display-4">Ошибка 403</h1>
+    <p class="lead">У вас нет прав для выполнения этого действия.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary">Вернуться на главную</a>
+</div>
+{% endblock %}

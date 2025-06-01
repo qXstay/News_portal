@@ -1,0 +1,17 @@
+{% extends "default.html" %}
+{% load i18n %}
+
+{% block title %}Выход{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Вы действительно хотите выйти?</h2>
+    <hr>
+    <p>Нажмите «Выйти», если хотите завершить сеанс.</p>
+    <form method="post" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Выйти</button>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}
