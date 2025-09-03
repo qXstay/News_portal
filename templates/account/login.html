@@ -1,41 +1,46 @@
 {% extends "default.html" %}
+{% load i18n %}
 {% load socialaccount %}
 
-{% block title %}Вход{% endblock %}
+{% block title %}{% trans "Login" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Вход в систему</h2>
+    <h2>{% trans "Login" %}</h2>
 
     <!-- Кнопка входа через Google -->
     <div class="mb-4">
-        <a href="{% provider_login_url 'google' %}" class="btn btn-danger">
-            <i class="fab fa-google me-2"></i>Войти через Google
-        </a>
-        <a href="{% provider_login_url 'yandex' %}" class="btn btn-warning">
-            <i class="fab fa-yandex me-2"></i>Войти через Яндекс
-        </a>
-
-    </div>
+    <a href="/accounts/google/login/" class="btn btn-danger">
+        <i class="fab fa-google me-2"></i>{% trans "Login with Google" %}
+    </a>
+    <a href="/accounts/yandex/login/" class="btn btn-warning">
+        <i class="fab fa-yandex me-2"></i>{% trans "Login with Yandex" %}
+    </a>
+</div>
 
     <!-- Форма для входа -->
     <form method="post" action="{% url 'account_login' %}">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="id_login" class="form-label">Email</label>
+            <label for="id_login" class="form-label">{% trans "Email" %}</label>
             <input type="email" name="login" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label for="id_password" class="form-label">Пароль</label>
+            <label for="id_password" class="form-label">{% trans "Password" %}</label>
             <input type="password" name="password" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-primary">Войти</button>
-        <a href="{% url 'account_signup' %}" class="btn btn-link">Регистрация</a>
+        <button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
+        <a href="{% url 'account_signup' %}" class="btn btn-link">{% trans "Sign Up" %}</a>
+
         {% if form.errors %}
-            <div class="alert alert-danger">
-        {{ form.errors }}
+            <div class="alert alert-danger mt-3">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
             </div>
-{% endif %}
+        {% endif %}
     </form>
 </div>
 {% endblock %}

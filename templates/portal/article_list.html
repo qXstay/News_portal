@@ -1,18 +1,19 @@
 {% extends 'default.html' %}
 {% load censor %}
+{% load i18n %}
 
 {% block title %}Статьи{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2 class="mt-5">Все статьи (Всего: {{ page_obj.paginator.count }})</h2>
+    <h2 class="mt-5">{% trans "All articles" %} ({% trans "Total" %}: {{ page_obj.paginator.count }})</h2>
     <table class="table table-striped mt-4">
         <thead>
             <tr>
-                <th scope="col">Заголовок</th>
-                <th scope="col">Дата</th>
-                <th scope="col">Превью</th>
-                <th scope="col">Действия</th>
+                <th scope="col">{% trans "Heading" %}</th>
+                <th scope="col">{% trans "Date" %}</th>
+                <th scope="col">{% trans "Preview" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -25,8 +26,8 @@
                     <td>{{ post.content|slice:":50"|censor }}</td>
                     <td>
                         {% if user.is_authenticated and post.author.user == user %}
-                        <a href="{% url 'article_edit' post.pk %}" class="btn btn-sm btn-warning">Редактировать</a>
-                        <a href="{% url 'article_delete' post.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                        <a href="{% url 'article_edit' post.pk %}" class="btn btn-sm btn-warning">{% trans "Edit" %}</a>
+                        <a href="{% url 'article_delete' post.pk %}" class="btn btn-sm btn-danger">{% trans "Delete" %}</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -38,8 +39,8 @@
     <div class="pagination">
         <span class="step-links">
             {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; первая</a>
-                <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+                <a href="?page=1">&laquo; {% trans "first" %}</a>
+                <a href="?page={{ page_obj.previous_page_number }}">{% trans "previous" %}</a>
             {% endif %}
 
             <span class="current">
@@ -47,8 +48,8 @@
             </span>
 
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">следующая</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+                <a href="?page={{ page_obj.next_page_number }}">{% trans "next" %}</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">{% trans "past" %} &raquo;</a>
             {% endif %}
         </span>
     </div>

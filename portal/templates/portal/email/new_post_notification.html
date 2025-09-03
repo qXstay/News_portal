@@ -1,18 +1,20 @@
+{% load i18n %}
+
 <!DOCTYPE html>
 <html>
 <body>
     <p>
-      Здравствуй, {{ user.username }}!
-      Новая {{ post.post_type|lower }} в разделах:
-      {% for cat in post.categories.all %}
-        <strong>{{ cat.name }}</strong>{% if not forloop.last %}, {% endif %}
-      {% empty %}
-        (без категории)
-      {% endfor %}.
+        {% blocktrans with username=user.username %}Hello, {{ username }}!{% endblocktrans %}
+        {% trans "New news in category" %}:
+        {% for cat in post.categories.all %}
+            <strong>{{ cat.name }}</strong>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            ({% trans "no categories" %})
+        {% endfor %}.
     </p>
 
     <h2>{{ post.title }}</h2>
     <p>{{ preview }}</p>
-    <p><a href="http://127.0.0.1:8000{{ post.get_absolute_url }}">Читать полностью</a></p>
+    <p><a href="http://{{ domain }}{{ post.get_absolute_url }}">{% trans "Read full article" %}</a></p>
 </body>
 </html>

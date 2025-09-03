@@ -1,11 +1,16 @@
 {% extends 'default.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container mt-5">
     <h2>
-    {% if form.instance.pk %}Редактирование{% else %}Создание{% endif %}
-    {% if post_type == 'news' %}новости{% else %}статьи{% endif %}
-</h2>
+        {% if form.instance.pk %}
+            {% if post_type == 'news' %}{% trans "Edit news" %}{% else %}{% trans "Edit article" %}{% endif %}
+        {% else %}
+            {% if post_type == 'news' %}{% trans "Create news" %}{% else %}{% trans "Create article" %}{% endif %}
+        {% endif %}
+    </h2>
+
     <form method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}
@@ -26,28 +31,15 @@
 
         <!-- Категории -->
         <div class="mb-3">
-    <label class="form-label">Категории <span class="text-danger">*</span></label>
-    <div class="form-check">
-        {% for checkbox in form.categories %}
-            <div class="form-check mb-2">
-                <input
-                    type="checkbox"
-                    name="{{ form.categories.name }}"
-                    value="{{ checkbox.data.value }}"
-                    id="{{ checkbox.id_for_label }}"
-                    class="form-check-input"
-                    {% if checkbox.data.selected %}checked{% endif %}
-                >
-                <label class="form-check-label" for="{{ checkbox.id_for_label }}">
-                    {{ checkbox.choice_label }}
-                </label>
+            <label class="form-label">{% trans "Categories" %} <span class="text-danger">*</span></label>
+            <div class="border p-3">
+                {{ form.categories }}
             </div>
-        {% endfor %}
-        {{ form.categories.errors }}
-    </div>
-</div>
+            {{ form.categories.errors }}
+        </div>
 
-        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+        <a href="{% if post_type == 'news' %}{% url 'news_list' %}{% else %}{% url 'article_list' %}{% endif %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>
 </div>
 {% endblock %}

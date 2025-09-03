@@ -1,13 +1,14 @@
 {% extends 'default.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Удаление {% if object.post_type == 'news' %}новости{% else %}статьи{% endif %}</h2>
+    <h2>{% trans "Delete" %} {% if object.post_type == 'news' %}{% trans "new" %}{% else %}{% trans "article" %}{% endif %}</h2>
     <form method="post">
         {% csrf_token %}
-        <p>Вы уверены, что хотите удалить "{{ object.title }}"?</p>
-        <button type="submit" class="btn btn-danger">Удалить</button>
-        <a href="{{ view.get_success_url }}" class="btn btn-secondary">Отмена</a>
+        <p>{% trans "Are you sure you want to delete" %} "{{ object.title }}"?</p>
+        <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+        <a href="{{ view.get_success_url }}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>
 </div>
 {% endblock %}

@@ -1,20 +1,21 @@
 {% extends 'default.html' %}
 {% load censor %}
+{% load i18n %}
 
 {% block title %}{{ post.title|censor }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h2>{{ post.title|censor }}</h2>
-    <p><strong>Автор:</strong> {{ post.author.user.username }}</p>
-    <p><strong>Дата публикации:</strong> {{ post.created_at|date:"d.m.Y" }}</p>
-    <p><strong>Категории:</strong>
+    <p><strong>{% trans "Author" %}:</strong> {{ post.author.user.username }}</p>
+    <p><strong>{% trans "Publication date" %}</strong> {{ post.created_at|date:"d.m.Y" }}</p>
+    <p><strong>{% trans "Сategories" %}:</strong>
         {% for category in post.categories.all %}
             {{ category.name }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
     </p>
     <hr>
     <p>{{ post.content|censor }}</p>
-    <a href="{% url 'news_list' %}" class="btn btn-secondary">Назад к списку новостей</a>
+    <a href="{% url 'news_list' %}" class="btn btn-secondary">{% trans "Back to news list" %}</a>
 </div>
 {% endblock %}

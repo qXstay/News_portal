@@ -1,13 +1,19 @@
 from datetime import time
 
-from django.urls import path
+from django.urls import path, include
 from . import views
 from .views import (
     NewsCreateView, NewsUpdateView, NewsDeleteView,
-    ArticleCreateView, ArticleUpdateView, ArticleDeleteView
+    ArticleCreateView, ArticleUpdateView, ArticleDeleteView,
+    NewsViewSet, ArticleViewSet
 )
 from django.views.decorators.cache import cache_page
 from django.http import HttpResponse
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'news', NewsViewSet, basename='news-api')
+router.register(r'articles', ArticleViewSet, basename='articles-api')
 
 urlpatterns = [
     path('', views.home, name='home'),  # Главная страница
@@ -24,6 +30,9 @@ urlpatterns = [
     path('become_author/', views.become_author, name='become_author'),
     path('subscribe/<int:category_id>/', views.subscribe, name='subscribe'),
     path('unsubscribe/<int:category_id>/', views.unsubscribe, name='unsubscribe'),
+    path('settimezone/', views.set_timezone, name='set_timezone'),
+    path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
 
 def cache_test(request):

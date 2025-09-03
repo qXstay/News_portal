@@ -102,11 +102,13 @@ def new_post_notification(post_id):
                 continue
 
             try:
+                clean_domain = domain.replace('/ru', '').replace('/en', '')
+
                 html = render_to_string('portal/email/new_post_notification.html', {
                     'post': post,
                     'user': user,
                     'preview': post.content[:50] + '...',
-                    'domain': domain
+                    'domain': clean_domain
                 })
 
                 msg = EmailMultiAlternatives(

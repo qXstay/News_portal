@@ -6,12 +6,18 @@
 __pycache__/
 db.sqlite3
 media/
+migrations/
 
 # Environment #
 ###############
 .env
-.venv/
+.venv
+env/
 venv/
+
+# Database
+*.sqlite3
+*.db
 
 # IDE #
 #######
@@ -19,6 +25,8 @@ venv/
 .vscode/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*.swo
 
 # Cache #
 #########

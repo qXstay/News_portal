@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Author, Category, Post, PostCategory, Comment, Subscription
+from modeltranslation.admin import TranslationAdmin
 
 # Действие для обнуления рейтинга автора
 def reset_author_rating(modeladmin, request, queryset):
@@ -37,7 +38,7 @@ class AuthorAdmin(admin.ModelAdmin):
     actions = [reset_author_rating]
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(TranslationAdmin):
     list_display = ('name', 'display_subscribers', 'subscribers_count')
     list_filter = ('name',)
     search_fields = ('name',)
@@ -53,7 +54,7 @@ class CategoryAdmin(admin.ModelAdmin):
     subscribers_count.short_description = 'Количество подписчиков'
 
 @admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(TranslationAdmin):
     inlines = [PostCategoryInline]
     list_display = ('title', 'post_type', 'author', 'created_at', 'rating', 'display_categories')
     list_filter = ('post_type', 'author', 'created_at', 'categories')  # Возвращаем стандартный фильтр

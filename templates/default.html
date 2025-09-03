@@ -1,52 +1,132 @@
 {% load static %}
 {% load auth_extras %}
-
+{% load i18n %}
+{% load tz %}
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
+    <style>
+    /* Явные стили для темной темы */
+    body.dark-theme {
+        background-color: #333333;
+        color: #ffffff;
+    }
+
+    body.dark-theme .navbar-dark.bg-dark {
+        background-color: #212529 !important;
+    }
+
+    body.dark-theme .navbar-dark .navbar-nav .nav-link,
+    body.dark-theme .navbar-dark .navbar-brand {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    body.dark-theme .alert-info {
+        background-color: #0c5460;
+        border-color: #0b4e59;
+        color: #d1ecf1;
+    }
+
+    body.dark-theme table {
+        color: #ffffff;
+    }
+
+    body.dark-theme .table-striped > tbody > tr:nth-of-type(odd) > * {
+        color: #ffffff;
+    }
+</style>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>{% block title %}News Portal{% endblock %}</title>
-    <link rel="icon" href="{% static 'assets/favicon.ico' %}" />
+    <title>{% block title %}{% trans "News Portal" %}{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/favicon.ico' %}" />
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+
+{# Вычисляем текущий час в локальном времени #}
+{% get_current_timezone as TIME_ZONE %}
+{% localtime on %}
+    {% now "DATETIME_FORMAT" as current_time %}
+    {% now "H" as current_hour %}
+    <body class="{% if current_hour|add:'0' >= 19 or current_hour|add:'0' <= 7 %}dark-theme{% endif %}">
+{% endlocaltime %}
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
-    <a class="navbar-brand" href="/">Новостной портал</a>
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+    <a class="navbar-brand" href="/">{% trans "News Portal" %}</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="{% url 'news_list' %}">Новости</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'article_list' %}">Статьи</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'news_search' %}">Поиск</a></li>
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'news_list' %}">{% trans "News" %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'article_list' %}">{% trans "Articles" %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'news_search' %}">{% trans "Search" %}</a>
+        </li>
 
         {% if user|has_group:"authors" %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'news_create' %}">Создать новость</a>
+            <a class="nav-link" href="{% url 'news_create' %}">{% trans "Create news" %}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'article_create' %}">Создать статью</a>
+            <a class="nav-link" href="{% url 'article_create' %}">{% trans "Create article" %}</a>
           </li>
         {% endif %}
       </ul>
 
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <!-- Переключатель языка -->
+       <li class="nav-item">
+           <form action="{% url 'set_language' %}" method="post" class="d-inline">
+    {% csrf_token %}
+    <input name="next" type="hidden" value="{{ request.path }}">
+    <div class="btn-group">
+        <button type="submit" name="language" value="ru"
+            class="btn btn-sm btn-outline-secondary {% if LANGUAGE_CODE == 'ru' %}active{% endif %}">
+            RU
+        </button>
+        <button type="submit" name="language" value="en"
+                class="btn btn-sm btn-outline-secondary {% if LANGUAGE_CODE == 'en' %}active{% endif %}">
+            EN
+        </button>
+    </div>
+</form>
+</li>
+
+          <li class="nav-item">
+    <form action="{% url 'set_timezone' %}" method="post" class="d-inline">
+        {% csrf_token %}
+        <div class="btn-group">
+            <select name="timezone" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="" disabled selected>{% trans "Time Zone" %}</option>
+                {% for tz in timezones %}
+                    <option value="{{ tz }}" {% if request.session.django_timezone == tz %}selected{% endif %}>
+                        {{ tz }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</li>
+
         {% if user.is_authenticated %}
           {% if not user|has_group:"authors" %}
             <li class="nav-item">
-              <a href="{% url 'become_author' %}" class="btn btn-success mx-2">Стать автором</a>
+              <a href="{% url 'become_author' %}" class="btn btn-success mx-2">{% trans "Become an author" %}</a>
             </li>
           {% endif %}
-          <li class="nav-item"><span class="nav-link">Привет, {{ user.username }}!</span></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">Выйти</a></li>
+          <li class="nav-item"><span class="nav-link">{% blocktrans with username=user.username %}Hello, {{ username }}!{% endblocktrans %}</span></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">{% trans "Logout" %}</a></li>
         {% else %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">Войти</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'account_signup' %}">Регистрация</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">{% trans "Login" %}</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a></li>
         {% endif %}
       </ul>
     </div>
@@ -54,6 +134,20 @@
 </nav>
 
 <div class="container mt-4">
+    <div class="alert alert-info">
+    Текущее время: {{ current_time }} | Час: {{ current_hour }} | Тема: {% if current_hour|add:"0" >= 19 or current_hour|add:"0" <= 7 %}Темная{% else %}Светлая{% endif %}
+</div>
+  {% if messages %}
+    <div class="mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   {% block content %}{% endblock %}
 </div>
 

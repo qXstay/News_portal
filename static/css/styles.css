@@ -10837,3 +10837,22 @@ textarea.form-control-lg {
     margin-left: 10px;
     font-size: 0.8em;
 }
+
+/* LIGHT/DARK THEME */
+/* Гарантированное применение темной темы */
+body.dark-theme {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme * {
+    color: #ffffff !important;
+}
+
+body.dark-theme .bg-light {
+    background-color: #444444 !important;
+}
+
+body.dark-theme .table {
+    color: #ffffff !important;
+}

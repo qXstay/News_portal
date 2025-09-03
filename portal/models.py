@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -18,27 +19,31 @@ class Author(models.Model):
         self.save()
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(_("Category Name"), max_length=255, unique=True)
     subscribers = models.ManyToManyField(User, related_name='subscribed_categories', blank=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name_plural = 'Categories'
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
 
 class Post(models.Model):
-    categories = models.ManyToManyField(Category, through='PostCategory', verbose_name='Категории')
+    categories = models.ManyToManyField(Category, through='PostCategory', verbose_name=_('Categories'))
     NEWS = 'news'
     ARTICLE = 'article'
     objects = None
-    POST_TYPES = [(NEWS, 'Новость'), (ARTICLE, 'Статья')]  # Исправляем ключи choices
+    POST_TYPES = [
+        (NEWS, _("News")),
+        (ARTICLE, _("Article")),
+    ]
 
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name = 'posts')
-    post_type = models.CharField(max_length=7, choices=POST_TYPES, default=NEWS)  # Обновляем default
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
+    post_type = models.CharField(max_length=7, choices=POST_TYPES, default=NEWS)
     created_at = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=255)
-    content = models.TextField()
+    title = models.CharField(_("Title"), max_length=255)
+    content = models.TextField(_("Content"))
     rating = models.IntegerField(default=0)
 
     def like(self):
@@ -81,5 +86,4 @@ class Subscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-
 

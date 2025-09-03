@@ -1,19 +1,20 @@
 {% extends 'default.html' %}
 {% load censor %}
+{% load i18n %}
 
-{% block title %}Новости{% endblock %}
+{% block title %}{% trans "News" %}{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2 class="mt-5">Все новости (Всего: {{ page_obj.paginator.count }})</h2>
+    <h2 class="mt-5">{% trans "All news" %} ({% trans "Total" %}: {{ page_obj.paginator.count }})</h2>
 
     <table class="table table-striped mt-4">
         <thead>
             <tr>
-                <th scope="col">Заголовок</th>
-                <th scope="col">Дата</th>
-                <th scope="col">Превью</th>
-                <th scope="col">Действия</th>
+                <th scope="col">{% trans "Title" %}</th>
+                <th scope="col">{% trans "Date" %}</th>
+                <th scope="col">{% trans "Preview" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -28,10 +29,10 @@
                     <td>{{ post.content|slice:":50"|censor }}</td>
                     <td>
                         {% if user == post.author.user %}
-                            <a href="{% url 'news_edit' post.pk %}" class="btn btn-sm btn-warning">Редактировать</a>
-                            <a href="{% url 'news_delete' post.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                            <a href="{% url 'news_edit' post.pk %}" class="btn btn-sm btn-warning">{% trans "Edit" %}</a>
+                            <a href="{% url 'news_delete' post.pk %}" class="btn btn-sm btn-danger">{% trans "Delete" %}</a>
                         {% else %}
-                            <span class="text-muted">Нет прав</span>
+                            <span class="text-muted">{% trans "No rights" %}</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -44,9 +45,9 @@
                                     <span class="badge bg-secondary">{{ category.name }}</span>
                                     {% if user.is_authenticated %}
                                         {% if user in category.subscribers.all %}
-                                            <a href="{% url 'unsubscribe' category.id %}" class="btn btn-sm btn-outline-danger">Отписаться</a>
+                                            <a href="{% url 'unsubscribe' category.id %}" class="btn btn-sm btn-outline-danger">{% trans "Unsubscribe" %}</a>
                                         {% else %}
-                                            <a href="{% url 'subscribe' category.id %}" class="btn btn-sm btn-outline-success">Подписаться</a>
+                                            <a href="{% url 'subscribe' category.id %}" class="btn btn-sm btn-outline-success">{% trans "Subscribe" %}</a>
                                         {% endif %}
                                     {% endif %}
                                 </div>
@@ -57,7 +58,7 @@
                 {% endif %}
             {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center">Новостей пока нет.</td>
+                    <td colspan="4" class="text-center">{% trans "No news yet" %}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -67,17 +68,19 @@
     <div class="pagination">
         <span class="step-links">
             {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; первая</a>
-                <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+                <a href="?page=1">&laquo; {% trans "first" %}</a>
+                <a href="?page={{ page_obj.previous_page_number }}">{% trans "previous" %}</a>
             {% endif %}
 
             <span class="current">
-                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                {% blocktrans with number=page_obj.number num_pages=page_obj.paginator.num_pages %}
+                    Page {{ number }} of {{ num_pages }}
+                {% endblocktrans %}
             </span>
 
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">следующая</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+                <a href="?page={{ page_obj.next_page_number }}">{% trans "next" %}</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">{% trans "last" %} &raquo;</a>
             {% endif %}
         </span>
     </div>

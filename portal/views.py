@@ -7,17 +7,25 @@ from django.views.generic import CreateView, UpdateView, DeleteView
 from .forms import NewsForm, ArticleForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .filters import NewsFilter
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import Group
 from django.utils.decorators import method_decorator
 from django.contrib import messages
-from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 import logging
 from .mixins import EmailVerifiedRequiredMixin
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _l
+from django.utils import translation
+from django.shortcuts import redirect
+import pytz
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from .serializers import PostSerializer
+from django.utils import timezone
+
 
 logger = logging.getLogger(__name__)
 logger = logging.getLogger('django')
@@ -25,30 +33,68 @@ logger = logging.getLogger('django')
 def authors_only(user):
     return user.groups.filter(name='authors').exists()
 
-@cache_page(60 * 5)  # 5 минут
+# Временно отключаем кэширование для тестирования
+# @cache_page(60 * 5)
 def news_list(request):
+    # Активируем язык пользователя
+    user_language = request.LANGUAGE_CODE
+    translation.activate(user_language)
+
     news = Post.objects.filter(post_type='news').order_by('-created_at')
+
+    # Для первых 5 новостей принудительно используем переведенные версии
+    for news_item in news[:5]:
+        if user_language == 'en':
+            # Используем английскую версию, если она существует
+            news_item.title = news_item.title_en or news_item.title
+            news_item.content = news_item.content_en or news_item.content
+
     paginator = Paginator(news, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'portal/news_list.html', {'page_obj': page_obj})
 
-@cache_page(60 * 5)  # 5 минут
+    return render(request, 'portal/news_list.html', {
+        'page_obj': page_obj,
+        'page_title': _("News List")
+    })
+
+# @cache_page(60 * 5)
 def article_list(request):
     articles = Post.objects.filter(post_type='article').order_by('-created_at')
     paginator = Paginator(articles, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'portal/article_list.html', {'page_obj': page_obj})
+    return render(request, 'portal/article_list.html', {
+        'page_obj': page_obj,
+        'page_title': _("Article List")
+    })
 
-@cache_page(60 * 5)  # 5 минут
+# @cache_page(60 * 5)
 def news_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+
+    # Активируем язык пользователя
+    user_language = request.LANGUAGE_CODE
+    translation.activate(user_language)
+
+    # Если это одна из первых 5 новостей и язык английский
+    if user_language == 'en':
+        # Проверяем, входит ли новость в первые 5
+        first_five_ids = Post.objects.filter(post_type='news').order_by('-created_at').values_list('id', flat=True)[:5]
+
+        if post.id in first_five_ids:
+            # Используем английскую версию, если она существует
+            post.title = post.title_en or post.title
+            post.content = post.content_en or post.content
+
     return render(request, 'portal/news_detail.html', {'post': post})
 
-@cache_page(60)  # 1 минута
+# @cache_page(60)
 def home(request):
-    return render(request, 'portal/index.html')
+    lang_code = request.COOKIES.get('django_language')
+    if lang_code:
+        translation.activate(lang_code)
+    return render(request, 'portal/index.html', {'title': _('Home Page')})
 
 def search_news(request):
     news = Post.objects.filter(post_type='news').order_by('-created_at')
@@ -78,8 +124,8 @@ class NewsCreateView(LoginRequiredMixin, EmailVerifiedRequiredMixin, CreateView)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['post_type'] = 'news'
+        context['form_title'] = _("Create News Article")
         return context
-
 
 class NewsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
@@ -89,7 +135,7 @@ class NewsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user  # Передаем пользователя в форму
+        kwargs['user'] = self.request.user
         return kwargs
 
     def test_func(self):
@@ -156,12 +202,24 @@ class ArticleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.get_object().author.user == self.request.user
 
+
 @login_required
 def become_author(request):
     user = request.user
     authors_group, created = Group.objects.get_or_create(name='authors')
+
+    # Добавляем пользователя в группу authors
     if not user.groups.filter(name='authors').exists():
         user.groups.add(authors_group)
+
+        # Создаём запись Author
+        from .models import Author
+        Author.objects.get_or_create(user=user)
+
+        messages.success(request, _("You are now an author!"))
+    else:
+        messages.info(request, _("You are already an author"))
+
     return redirect('home')
 
 @login_required
@@ -177,18 +235,49 @@ def unsubscribe(request, category_id):
     return redirect('news_list')
 
 def custom_permission_denied(request, exception):
-    return render(request, '403.html', status=403)
+    return render(request, '403.html', {'error_message': _("You don't have permission to perform this action")}, status=403)
 
-# def test_view(request):
-#     logger.debug("Тестовый DEBUG лог")
-#     logger.info("Тестовый INFO лог")
-#     logger.warning("Тестовый WARNING лог")
-#     logger.error("Тестовая ОШИБКА лог")
-#     1 / 0  # вызов ZeroDivisionError
-#     return HttpResponse("Done")
-#
-# @require_GET
-# def trigger_error(request):
-#     # Генерируем ошибку, которую перехватит Django
-#     1 / 0
-#     return HttpResponse("This won't be shown")
+def set_timezone(request):
+    if request.method == 'POST':
+        tz = request.POST.get('timezone')
+        if tz:
+            request.session['django_timezone'] = tz
+            messages.success(request, _("Timezone changed to") + f" {tz}")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class NewsViewSet(viewsets.ModelViewSet):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Post.objects.filter(post_type='news').order_by('-created_at')
+
+    def create(self, request, *args, **kwargs):
+        # Проверка лимита новостей
+        today = timezone.localtime(timezone.now()).date()
+        author = request.user.author
+
+        if Post.objects.filter(
+                author=author,
+                post_type='news',
+                created_at__date=today
+        ).count() >= 3:
+            return Response(
+                {"error": _("You cannot publish more than 3 news per day!")},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        author = self.request.user.author
+        serializer.save(author=author, post_type='news')
+
+
+class ArticleViewSet(viewsets.ModelViewSet):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Post.objects.filter(post_type='article').order_by('-created_at')
+
+    def perform_create(self, serializer):
+        author = self.request.user.author
+        serializer.save(author=author, post_type='article')

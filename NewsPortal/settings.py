@@ -2,6 +2,10 @@ from pathlib import Path
 import os
 import logging
 from django.utils.log import DEFAULT_LOGGING
+from django.utils.translation import gettext_lazy as _
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,10 +18,10 @@ logs_dir.mkdir(exist_ok=True)
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9#_-m-4km12+l&nj(*ji$yrza_#f89yki5$bhm-7zqvz1#7huq'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-development-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 
@@ -26,6 +30,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +49,8 @@ INSTALLED_APPS = [
     'django_apscheduler',
     'django_celery_beat',
     'django_celery_results',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -53,8 +60,8 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
-LOGIN_URL = 'account_login'  # Куда перенаправлять неавторизованных пользователей
-LOGIN_REDIRECT_URL = 'news_list'  # После успешного входа
+LOGIN_URL = 'account_login'
+LOGIN_REDIRECT_URL = 'news_list'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
@@ -66,17 +73,20 @@ ACCOUNT_FORMS = {'signup': 'portal.forms.CustomSignupForm'}
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
-SOCIALACCOUNT_LOGIN_ON_GET = False  # Упрощает процесс авторизации
+SOCIALACCOUNT_LOGIN_ON_GET = False
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'portal.middlewares.ForceLangMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'portal.middlewares.TimezoneMiddleware',
 ]
 
 ROOT_URLCONF = 'NewsPortal.urls'
@@ -92,6 +102,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
+                'portal.context_processors.account',
+                'portal.context_processors.socialaccount',
+                'portal.context_processors.timezones',
             ],
         },
     },
@@ -130,7 +144,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'ru-ru'
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale')
+]
+
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -156,8 +174,8 @@ EMAIL_FILE_PATH = '/tmp/app-messages'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = 'qxstay@yandex.ru'
-EMAIL_HOST_PASSWORD = 'jncqlfswdpzrlifx'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMINS = [('koala.na.party', 'koala.na.party@gmail.com')]
@@ -175,6 +193,30 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 SERVER_EMAIL = 'qxstay@yandex.ru'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', ''),
+            'secret': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', ''),
+            'key': ''
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'yandex': {
+        'APP': {
+            'client_id': os.getenv('SOCIAL_AUTH_YANDEX_OAUTH2_KEY', ''),
+            'secret': os.getenv('SOCIAL_AUTH_YANDEX_OAUTH2_SECRET', ''),
+            'key': ''
+        }
+    }
+}
 
 # Фильтры для логирования
 class DebugTrueFilter(logging.Filter):
@@ -325,3 +367,39 @@ CACHES = {
 
 print(f"Logs directory: {logs_dir}")
 
+LANGUAGES = [
+    ('ru', _('Russian')),
+    ('en', _('English')),
+]
+
+SOCIALACCOUNT_ADAPTER = 'portal.adapters.CustomSocialAccountAdapter'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+LANGUAGE_COOKIE_NAME = 'django_language'
+LANGUAGE_COOKIE_AGE = 31536000  # 1 год в секундах
+LANGUAGE_COOKIE_DOMAIN = None
+LANGUAGE_COOKIE_PATH = '/'
+LANGUAGE_COOKIE_SECURE = False
+LANGUAGE_COOKIE_HTTPONLY = False
+LANGUAGE_COOKIE_SAMESITE = 'Lax'
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'ru'
+MODELTRANSLATION_LANGUAGES = ('ru', 'en')
+MODELTRANSLATION_FALLBACK_LANGUAGES = ('ru', 'en')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
