@@ -178,7 +178,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMINS = [('koala.na.party', 'koala.na.party@gmail.com')]
+ADMINS = [('ваш авторизованный пользователь', 'почта авторизованного пользователя')]
 
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
@@ -192,7 +192,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
-SERVER_EMAIL = 'qxstay@yandex.ru'
+SERVER_EMAIL = 'ваша почта с которой отправляется рассылка'
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
