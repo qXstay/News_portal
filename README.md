@@ -44,7 +44,7 @@ Django-приложение для полнофункционального но
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/qXstay/NewsPortal.git
+git clone https://github.com/qXstay/News_Portal.git
 cd NewsPortal
 ```
 
